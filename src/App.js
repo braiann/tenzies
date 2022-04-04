@@ -1,24 +1,85 @@
-import logo from './logo.svg';
 import './App.css';
+import Die from './Die';
+import React from 'react';
+import {nanoid} from 'nanoid';
+import Confetti from 'react-confetti'
 
 function App() {
+  const [dice, setDice] = React.useState(allNewDice())
+  const [tenzies, setTenzies] = React.useState(false)
+
+  React.useEffect(() => {
+      if (dice.every(die => die.isHeld && die.value === dice[0].value)) {
+        setTenzies(true)
+        console.log('Ganaste!')
+      }
+    }, [dice]
+  )
+
+  function allNewDice() {
+    let newDice = []
+    for (let i = 0; i < 10; i++) {
+        newDice.push({
+          id: nanoid(),
+          value: Math.round(Math.random() * 5) + 1,
+          isHeld: false,
+        })
+    }
+    return newDice
+  }
+
+  function rollDice() {
+    setDice(prevDice => 
+      dice.map(die => {
+        if (die.isHeld) {
+          return die
+        }
+        return {
+          ...die,
+          value: Math.round(Math.random() * 5) + 1,
+          id: nanoid(),
+        }
+      })
+    )
+  }
+
+  function holdDice(id) {
+    setDice(prevDice => 
+      prevDice.map(die => {
+        if (die.id === id) {
+          return {
+            ...die,
+            isHeld: !die.isHeld,
+          }
+        }
+        return die
+      })
+    )
+  }
+
+  function newGame() {
+    setTenzies(false)
+    setDice(allNewDice)
+  }
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <main>
+      {tenzies && <Confetti />}
+      <p>Tira los dados hasta que todos tengan el mismo valor. Toca un dado para congelar su valor.</p>
+      <div className='dice'>
+        {dice.map(die =>
+          <Die
+            key={die.id}
+            value={die.value}
+            isHeld={die.isHeld}
+            holdDice={() => holdDice(die.id)}
+          />
+        )}
+      </div>
+      <button onClick={tenzies ? newGame : rollDice}>
+        {tenzies ? 'Nuevo juego' : 'Tirar'}
+      </button>
+    </main>
   );
 }
 
