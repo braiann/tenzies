@@ -89,3 +89,7 @@ button:active {
 .held {
   background-color: #59E391;
 }
+
+.rolls {
+  padding-bottom: 10px;
+}
